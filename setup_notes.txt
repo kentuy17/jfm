@@ -1,0 +1,106 @@
+###################
+Setting Up ABAS 3 
+###################
+This setup assumes you are using XAMPP.
+
+***********************
+Apache xampp-conf entry
+***********************
+assuming your project files are located in C:/projects/abas3 
+assuming you want to access abas3 on your browser via http://localhost/abas3
+edit the file located at <xampp>/apache/conf/extra/httpd-xampp.conf
+
+Alias /abas3 "C:/projects/abasV3/"
+<Directory "C:/projects/abasV3">
+    Options Indexes FollowSymLinks Includes ExecCGI
+    AllowOverride All
+    Require all granted
+</Directory>
+
+*********
+.htaccess
+*********
+the following .htaccess entry is needed to mask the index.php at the browser address bar.
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+</IfModule>
+
+**************
+Base URL Setup
+**************
+in order for CodeIgniter to work with SSL the following ‘base_url’ should be specified the config.php file
+
+$root = "http://".$_SERVER['HTTP_HOST'];
+$root .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
+$config['base_url'] = "$root";
+
+**********
+HMVC Setup
+**********
+Assuming you are starting with a clean CI install
+Assuming you are using CodeIgniter 3.x
+Assuming you are seeing the CI welcome page from http://localhost/abas3 on your browser
+Assuming you have read the docs and downloaded HMVC at https://bitbucket.org/wiredesignz/codeigniter-modular-extensions-hmvc/src
+
+0. Access the URL /index.php/welcome => shows Welcome to CodeIgniter
+1. Drop Modular Extensions third_party files into the application/third_party directory
+2. Drop Modular Extensions core files into application/core, the MY_Controller.php file is not required unless you wish to create your own controller extension
+3. Access the URL /index.php/welcome => shows Welcome to CodeIgniter
+3.0 if showing error about chr() or _ci_object_to_array
+3.1 change line if Route.php (strpos($class, $suffix) === FALSE) to if( $suffix && strpos($class, $suffix) === FALSE)
+3.2 edit Loader.php line 300 change _ci_object_to_array to _ci_prepare_view_vars
+4. Create module directory structure application/modules/welcome/controllers
+5. Move controller application/controllers/welcome.php to application/modules/welcome/controllers/welcome.php
+6. Access the URL /index.php/welcome => shows Welcome to CodeIgniter
+7. Create directory application/modules/welcome/views
+8. Move view application/views/welcome_message.php to application/modules/welcome/views/welcome_message.php
+9. Access the URL /index.php/welcome => shows Welcome to CodeIgniter
+
+*************
+FirePHP Setup
+*************
+Used for debugging PHP code directly via the browser console. (optional)
+
+firePHP location: http://www.firephp.org/
+firePHP extension for chrome: https://chrome.google.com/webstore/detail/firephp4chrome/gpgbmonepdpnacijbbdijfbecmgoojma
+
+1. Download FirePHP core 
+2. Copy the file /lib/FirePHPCore/FirePHP.class.php in CodeIgniter directory application/libraries.
+3. Rename the file FirePHP.class.php to FirePHP.php 
+4. Add firephp in the array of $autoload['libraries'] of file application/config/autoload.php (line 63). For instance, you get a line like this:
+$autoload['libraries'] = array('database','firePHP');
+5. Then you only need to log some calls to get values displayed in the Firebug console, like:
+$this->firephp->log('my string message' );
+6. you can also use profiler class for more debug info $this->output->enable_profiler(TRUE);
+
+***********
+TCPDF Setup
+***********
+tcpdf location: http://www.tcpdf.org/
+
+1. Download TCPDF
+2. Unzip the above download inside application/libraries/tcpdf.
+3. Create a new file inside application/libraries/Pdf.php
+
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+require_once dirname(__FILE__) . '/tcpdf/tcpdf.php';
+class Pdf extends TCPDF
+{ function __construct() { parent::__construct(); }
+}
+
+*********
+Autoloads
+*********
+
+$autoload['libraries'] = array('database','session','firePHP');
+
+$autoload['helper'] = array('url');
+
+*********
+Constants
+*********
+
+defined('THEME')        OR define('THEME', 'default');
